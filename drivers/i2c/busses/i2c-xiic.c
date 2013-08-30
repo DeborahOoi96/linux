@@ -1225,6 +1225,9 @@ static int xiic_i2c_probe(struct platform_device *pdev)
 	int ret, irq;
 	u8 i;
 	u32 sr;
+#ifdef CONFIG_OF
+	const unsigned int *prop;
+#endif
 
 	i2c = devm_kzalloc(&pdev->dev, sizeof(*i2c), GFP_KERNEL);
 	if (!i2c)
@@ -1276,6 +1279,14 @@ static int xiic_i2c_probe(struct platform_device *pdev)
 	/* If clock-frequency not specified in DT, do not configure in SW */
 	if (ret || i2c->i2c_clk > I2C_MAX_FAST_MODE_PLUS_FREQ)
 		i2c->i2c_clk = 0;
+
+#ifdef CONFIG_OF
+	prop = of_get_property(pdev->dev.of_node, "bus-id", NULL);
+	if (prop)
+		i2c->adap.nr = be32_to_cpup(prop);
+#endif
+
+	xiic_reinit(i2c);
 
 	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
 					xiic_process, IRQF_ONESHOT,
