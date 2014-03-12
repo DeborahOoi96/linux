@@ -23,6 +23,8 @@
 
 #include "8250.h"
 
+#include <linux/ni16550.h>
+
 #define UNKNOWN_DEV 0x3000
 #define CIR_PORT	0x0800
 
@@ -197,6 +199,8 @@ static const struct pnp_device_id pnp_dev_table[] = {
 	/* Com 1 */
 	/*  Deskline K56 Phone System PnP */
 	{	"MVX00A1",		0	},
+	/* National Instruments (NI) 16550 PNP */
+	{	NI_PORT_ID,		0	},
 	/* PC Rider K56 Phone System PnP */
 	{	"MVX00F2",		0	},
 	/* NEC 98NOTE SPEAKER PHONE FAX MODEM(33600bps) */
@@ -479,6 +483,7 @@ serial_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *dev_id)
 	uart.port.dev = &dev->dev;
 
 	line = serial8250_register_8250_port(&uart);
+#endif
 	if (line < 0 || (flags & CIR_PORT))
 		return -ENODEV;
 
@@ -495,8 +500,16 @@ static void serial_pnp_remove(struct pnp_dev *dev)
 	long line = (long)pnp_get_drvdata(dev);
 
 	dev->capabilities &= ~PNP_CONSOLE;
-	if (line)
+	if (line) {
+#ifdef CONFIG_SERIAL_8250_NI16550
+		if (is_niport(dev))
+			ni16550_unregister_port(line - 1);
+		else
+			serial8250_unregister_port(line - 1);
+#else
 		serial8250_unregister_port(line - 1);
+#endif
+	}
 }
 
 #ifdef CONFIG_PM
