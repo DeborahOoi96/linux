@@ -1316,6 +1316,14 @@ static int cdns_i2c_probe(struct platform_device *pdev)
 	if (irq < 0)
 		return irq;
 
+	/*
+	 * A bus number of -1 means dynamically assign, default to that if
+	 * bus-id isn't specified in the device tree.
+	 */
+	ret = of_property_read_u32(pdev->dev.of_node, "bus-id", &id->adap.nr);
+	if (ret)
+		id->adap.nr = -1;
+
 	id->adap.owner = THIS_MODULE;
 	id->adap.dev.of_node = pdev->dev.of_node;
 	id->adap.algo = &cdns_i2c_algo;
@@ -1390,9 +1398,11 @@ static int cdns_i2c_probe(struct platform_device *pdev)
 	}
 	cdns_i2c_init(id);
 
-	ret = i2c_add_adapter(&id->adap);
-	if (ret < 0)
+	ret = i2c_add_numbered_adapter(&id->adap);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "reg adap failed: %d\n", ret);
 		goto err_clk_notifier_unregister;
+	}
 
 	dev_info(&pdev->dev, "%u kHz mmio %08lx irq %d\n",
 		 id->i2c_clk / 1000, (unsigned long)r_mem->start, irq);
