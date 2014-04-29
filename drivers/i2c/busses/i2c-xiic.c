@@ -1280,6 +1280,10 @@ static int xiic_i2c_probe(struct platform_device *pdev)
 	if (ret || i2c->i2c_clk > I2C_MAX_FAST_MODE_PLUS_FREQ)
 		i2c->i2c_clk = 0;
 
+	/* a bus number of -1 means dynamically assign, default to that if
+	 * bus-id isn't specified in the device tree
+	 */
+	i2c->adap.nr = -1;
 #ifdef CONFIG_OF
 	prop = of_get_property(pdev->dev.of_node, "bus-id", NULL);
 	if (prop)
@@ -1319,7 +1323,7 @@ static int xiic_i2c_probe(struct platform_device *pdev)
 	}
 
 	/* add i2c adapter to i2c tree */
-	ret = i2c_add_adapter(&i2c->adap);
+	ret = i2c_add_numbered_adapter(&i2c->adap);
 	if (ret) {
 		xiic_deinit(i2c);
 		goto err_pm_disable;
