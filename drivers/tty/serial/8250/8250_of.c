@@ -9,6 +9,8 @@
 #include <linux/slab.h>
 #include <linux/serial_core.h>
 #include <linux/serial_reg.h>
+#include <linux/serial_8250.h>
+#include <linux/ni16550.h>
 #include <linux/of_address.h>
 #include <linux/of_irq.h>
 #include <linux/of_platform.h>
@@ -224,24 +226,33 @@ static int of_platform_serial_probe(struct platform_device *ofdev)
 	if (ret)
 		goto err_free;
 
-	if (port8250.port.fifosize)
+	switch (port_type) {
+#ifdef CONFIG_SERIAL_8250_NI16550
+	case PORT_NI16550:
+		ret = ni16550_register_port(&port);
+		break;
+#endif
+	default:
+		if (port8250.port.fifosize)
 		port8250.capabilities = UART_CAP_FIFO;
 
-	/* Check for TX FIFO threshold & set tx_loadsz */
-	if ((of_property_read_u32(ofdev->dev.of_node, "tx-threshold",
-				  &tx_threshold) == 0) &&
-	    (tx_threshold < port8250.port.fifosize))
-		port8250.tx_loadsz = port8250.port.fifosize - tx_threshold;
+		/* Check for TX FIFO threshold & set tx_loadsz */
+		if ((of_property_read_u32(ofdev->dev.of_node, "tx-threshold",
+					&tx_threshold) == 0) &&
+			(tx_threshold < port8250.port.fifosize))
+			port8250.tx_loadsz = port8250.port.fifosize - tx_threshold;
 
-	if (of_property_read_bool(ofdev->dev.of_node, "auto-flow-control"))
-		port8250.capabilities |= UART_CAP_AFE;
+		if (of_property_read_bool(ofdev->dev.of_node, "auto-flow-control"))
+			port8250.capabilities |= UART_CAP_AFE;
 
-	if (of_property_read_u32(ofdev->dev.of_node,
-			"overrun-throttle-ms",
-			&port8250.overrun_backoff_time_ms) != 0)
-		port8250.overrun_backoff_time_ms = 0;
+		if (of_property_read_u32(ofdev->dev.of_node,
+				"overrun-throttle-ms",
+				&port8250.overrun_backoff_time_ms) != 0)
+			port8250.overrun_backoff_time_ms = 0;
+		ret = serial8250_register_8250_port(&port8250);
+		break;
+	}
 
-	ret = serial8250_register_8250_port(&port8250);
 	if (ret < 0)
 		goto err_dispose;
 
@@ -265,8 +276,16 @@ err_free:
 static int of_platform_serial_remove(struct platform_device *ofdev)
 {
 	struct of_serial_info *info = platform_get_drvdata(ofdev);
-
-	serial8250_unregister_port(info->line);
+	switch (info->type) {
+#ifdef CONFIG_SERIAL_8250_NI16550
+	case PORT_NI16550:
+		ni16550_unregister_port(info->line);
+		break;
+#endif
+	default:
+		serial8250_unregister_port(info->line);
+		break;
+	}
 
 	reset_control_assert(info->rst);
 	pm_runtime_put_sync(&ofdev->dev);
@@ -338,6 +357,9 @@ static const struct of_device_id of_platform_serial_table[] = {
 	{ .compatible = "ti,da830-uart", .data = (void *)PORT_DA830, },
 	{ .compatible = "nuvoton,wpcm450-uart", .data = (void *)PORT_NPCM, },
 	{ .compatible = "nuvoton,npcm750-uart", .data = (void *)PORT_NPCM, },
+#ifdef CONFIG_SERIAL_8250_NI16550
+	{ .compatible = "ni16550",  .data = (void *)PORT_NI16550, },
+#endif
 	{ /* end of list */ },
 };
 MODULE_DEVICE_TABLE(of, of_platform_serial_table);
