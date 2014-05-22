@@ -199,8 +199,6 @@ static const struct pnp_device_id pnp_dev_table[] = {
 	/* Com 1 */
 	/*  Deskline K56 Phone System PnP */
 	{	"MVX00A1",		0	},
-	/* National Instruments (NI) 16550 PNP */
-	{	NI_PORT_ID,		0	},
 	/* PC Rider K56 Phone System PnP */
 	{	"MVX00F2",		0	},
 	/* NEC 98NOTE SPEAKER PHONE FAX MODEM(33600bps) */
