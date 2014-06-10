@@ -228,7 +228,8 @@ static int of_platform_serial_probe(struct platform_device *ofdev)
 
 	switch (port_type) {
 #ifdef CONFIG_SERIAL_8250_NI16550
-	case PORT_NI16550:
+	case PORT_NI16550_F16:
+	case PORT_NI16550_F128:
 		ret = ni16550_register_port(&port);
 		break;
 #endif
@@ -278,7 +279,8 @@ static int of_platform_serial_remove(struct platform_device *ofdev)
 	struct of_serial_info *info = platform_get_drvdata(ofdev);
 	switch (info->type) {
 #ifdef CONFIG_SERIAL_8250_NI16550
-	case PORT_NI16550:
+	case PORT_NI16550_F16:
+	case PORT_NI16550_F128:
 		ni16550_unregister_port(info->line);
 		break;
 #endif
@@ -358,7 +360,10 @@ static const struct of_device_id of_platform_serial_table[] = {
 	{ .compatible = "nuvoton,wpcm450-uart", .data = (void *)PORT_NPCM, },
 	{ .compatible = "nuvoton,npcm750-uart", .data = (void *)PORT_NPCM, },
 #ifdef CONFIG_SERIAL_8250_NI16550
-	{ .compatible = "ni16550",  .data = (void *)PORT_NI16550, },
+	{ .compatible = "ni16550-fifo16",
+		.data = (void *)PORT_NI16550_F16, },
+	{ .compatible = "ni16550-fifo128",
+		.data = (void *)PORT_NI16550_F128, },
 #endif
 	{ /* end of list */ },
 };
