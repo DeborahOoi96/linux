@@ -237,6 +237,20 @@ static const struct sdhci_arasan_soc_ctl_map intel_keembay_soc_ctl_map = {
 	.hiword_update = false,
 };
 
+static unsigned int sdhci_arasan_get_max_clock(struct sdhci_host *host)
+{
+	unsigned int max_clock;
+
+	/* Make sure we can listen to the mmc 'max-frequency' parameter, which
+	 * gets set in host->mmc->f_max in mmc_of_parse. */
+	if (host->mmc->f_max)
+		max_clock = host->mmc->f_max;
+	else
+		max_clock = sdhci_pltfm_clk_get_max_clock(host);
+
+	return max_clock;
+}
+
 static void sdhci_arasan_phy_set_delaychain(struct sdhci_host *host, bool enable)
 {
 	u32 reg;
@@ -499,7 +513,7 @@ static int sdhci_arasan_voltage_switch(struct mmc_host *mmc,
 
 static const struct sdhci_ops sdhci_arasan_ops = {
 	.set_clock = sdhci_arasan_set_clock,
-	.get_max_clock = sdhci_pltfm_clk_get_max_clock,
+	.get_max_clock = sdhci_arasan_get_max_clock,
 	.get_timeout_clock = sdhci_pltfm_clk_get_max_clock,
 	.set_bus_width = sdhci_set_bus_width,
 	.reset = sdhci_arasan_reset,
