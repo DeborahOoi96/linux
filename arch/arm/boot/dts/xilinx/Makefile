@@ -14,4 +14,15 @@ dtb-$(CONFIG_ARCH_ZYNQ) += \
 	zynq-zturn.dtb \
 	zynq-zturn-v5.dtb \
 	zynq-zybo.dtb \
-	zynq-zybo-z7.dtb
+	zynq-zybo-z7.dtb \
+	ni-793x.dtb \
+	ni-dosequis.dtb \
+	ni-myrio.dtb \
+	ni-roborio.dtb \
+	ni-sbrio-9607.dtb \
+	ni-sbrio-9627.dtb \
+	ni-sbrio-9637.dtb \
+	ni-solbetter.dtb \
+	ni-solenetexp.dtb \
+	ni-solgood.dtb \
+	ni-tecate.dtb
