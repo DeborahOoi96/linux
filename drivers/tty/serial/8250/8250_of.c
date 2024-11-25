@@ -230,7 +230,23 @@ static int of_platform_serial_probe(struct platform_device *ofdev)
 #ifdef CONFIG_SERIAL_8250_NI16550
 	case PORT_NI16550_F16:
 	case PORT_NI16550_F128:
-		ret = ni16550_register_port(&port);
+		struct device_node *np = ofdev->dev.of_node;
+		const char *transceiver;
+
+		if (of_property_read_string(np, "transceiver", &transceiver)) {
+			dev_warn(&ofdev->dev, "no transceiver property set\n");
+			return -ENODEV;
+		}
+		if (strcmp(transceiver, "RS-232") == 0) {
+			ret = serial8250_register_8250_port(&port8250);
+		} else if (strcmp(transceiver, "RS-485") == 0) {
+			ret = ni16550_register_port(&port8250);
+		} else {
+			dev_warn(&ofdev->dev,
+				 "unsupported transceiver property (%s)\n",
+				 transceiver);
+			return -EINVAL;
+		}
 		break;
 #endif
 	default:

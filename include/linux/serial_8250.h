@@ -48,7 +48,7 @@ struct plat_serial8250_port {
 	u16		bugs;		/* port bugs */
 	unsigned int	(*serial_in)(struct uart_port *, int);
 	void		(*serial_out)(struct uart_port *, int, int);
-	u32		(*dl_read)(struct uart_8250_port *up);
+	u32	(*dl_read)(struct uart_8250_port *up);
 	void		(*dl_write)(struct uart_8250_port *up, u32 value);
 	void		(*set_termios)(struct uart_port *,
 			               struct ktermios *new,
