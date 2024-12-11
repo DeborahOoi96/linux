@@ -1187,7 +1187,7 @@ static struct platform_driver pl35x_nandc_driver = {
 	.probe = pl35x_nand_probe,
 	.remove_new = pl35x_nand_remove,
 	.driver = {
-		.name = PL35X_NANDC_DRIVER_NAME,
+		.name = "pl35x-nand-controller",
 		.of_match_table = pl35x_nand_of_match,
 	},
 };
