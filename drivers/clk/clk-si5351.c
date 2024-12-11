@@ -1567,7 +1567,7 @@ static int si5351_i2c_probe(struct i2c_client *client)
 	}
 	/* set initial pll rate */
 	if (pdata->pll_rate[0] != 0) {
-		ret = clk_set_rate(clk, pdata->pll_rate[0]);
+		ret = clk_set_rate(drvdata->clkout[0].hw.clk, pdata->pll_rate[0]);
 		if (ret != 0)
 			dev_err(&client->dev, "Cannot set rate : %d\n", ret);
 	}
@@ -1597,7 +1597,7 @@ static int si5351_i2c_probe(struct i2c_client *client)
 	}
 	/* set initial pll rate */
 	if (pdata->pll_rate[1] != 0) {
-		ret = clk_set_rate(clk, pdata->pll_rate[1]);
+		ret = clk_set_rate(drvdata->clkout[1].hw.clk, pdata->pll_rate[1]);
 		if (ret != 0)
 			dev_err(&client->dev, "Cannot set rate : %d\n", ret);
 	}
