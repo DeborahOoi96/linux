@@ -1135,6 +1135,7 @@ static int pl35x_nand_chips_init(struct pl35x_nandc *nfc)
 
 static int pl35x_nand_probe(struct platform_device *pdev)
 {
+	printk("hi deb");
 	struct device *smc_dev = pdev->dev.parent;
 	struct amba_device *smc_amba = to_amba_device(smc_dev);
 	struct pl35x_nandc *nfc;
@@ -1143,6 +1144,8 @@ static int pl35x_nand_probe(struct platform_device *pdev)
 	nfc = devm_kzalloc(&pdev->dev, sizeof(*nfc), GFP_KERNEL);
 	if (!nfc)
 		return -ENOMEM;
+
+	printk("it's me");
 
 	nfc->dev = &pdev->dev;
 	nand_controller_init(&nfc->controller);
@@ -1166,6 +1169,7 @@ static int pl35x_nand_probe(struct platform_device *pdev)
 		return ret;
 
 	platform_set_drvdata(pdev, nfc);
+	printk("finish deb");
 
 	return 0;
 }
