@@ -1111,8 +1111,12 @@ static void pl35x_nand_chips_cleanup(struct pl35x_nandc *nfc)
 
 static int pl35x_nand_chips_init(struct pl35x_nandc *nfc)
 {
+	printk("entered pl35x_nand_chips_init");
 	struct device_node *np = nfc->dev->of_node, *nand_np;
+	//printk(nfc->dev->of_node);
 	int nchips = of_get_child_count(np);
+	printk("nchips");
+	printk("%d\n", nchips);
 	int ret;
 
 	if (!nchips || nchips > PL35X_NAND_MAX_CS) {
