@@ -999,6 +999,7 @@ static const struct nand_controller_ops pl35x_nandc_ops = {
 
 static int pl35x_nand_reset_state(struct pl35x_nandc *nfc)
 {
+	printk("entered pl35x_nand_reset_state");
 	int ret;
 
 	/* Disable interrupts and clear their status */
@@ -1032,12 +1033,15 @@ static int pl35x_nand_reset_state(struct pl35x_nandc *nfc)
 	       PL35X_SMC_ECC_CMD2_READ_COL_CHG_END_VALID(NAND_CMD_READ1),
 	       nfc->conf_regs + PL35X_SMC_ECC_CMD2);
 
+	printk("done pl35x_nand_reset_state");
+
 	return 0;
 }
 
 static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 				struct device_node *np)
 {
+	printk("entered pl35x_nand_chip_init");
 	struct pl35x_nand *plnand;
 	struct nand_chip *chip;
 	struct mtd_info *mtd;
@@ -1061,6 +1065,8 @@ static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 		return -EINVAL;
 	}
 
+	printk("spam");
+
 	plnand->cs = cs;
 
 	chip = &plnand->chip;
@@ -1079,6 +1085,8 @@ static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 		}
 	}
 
+	printk("spam spam");
+
 	ret = nand_scan(chip, 1);
 	if (ret)
 		return ret;
@@ -1091,11 +1099,14 @@ static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 
 	list_add_tail(&plnand->node, &nfc->chips);
 
+	printk("finished pl35x_nand_chip_init");
+
 	return ret;
 }
 
 static void pl35x_nand_chips_cleanup(struct pl35x_nandc *nfc)
 {
+	printk("entered pl35x_nand_chips_cleanup");
 	struct pl35x_nand *plnand, *tmp;
 	struct nand_chip *chip;
 	int ret;
@@ -1107,6 +1118,7 @@ static void pl35x_nand_chips_cleanup(struct pl35x_nandc *nfc)
 		nand_cleanup(chip);
 		list_del(&plnand->node);
 	}
+	printk("finish pl35x_nand_chips_cleanup");
 }
 
 static int pl35x_nand_chips_init(struct pl35x_nandc *nfc)
@@ -1128,11 +1140,13 @@ static int pl35x_nand_chips_init(struct pl35x_nandc *nfc)
 	for_each_child_of_node(np, nand_np) {
 		ret = pl35x_nand_chip_init(nfc, nand_np);
 		if (ret) {
+			printk("oops here we go");
 			of_node_put(nand_np);
 			pl35x_nand_chips_cleanup(nfc);
 			break;
 		}
 	}
+	printk("finished pl35x_nand_chips_init");
 
 	return ret;
 }
@@ -1156,21 +1170,31 @@ static int pl35x_nand_probe(struct platform_device *pdev)
 	nfc->controller.ops = &pl35x_nandc_ops;
 	INIT_LIST_HEAD(&nfc->chips);
 
+	printk("test1");
+
 	nfc->conf_regs = devm_ioremap_resource(&smc_amba->dev, &smc_amba->res);
 	if (IS_ERR(nfc->conf_regs))
 		return PTR_ERR(nfc->conf_regs);
+
+	printk("i'm hungry");
 
 	nfc->io_regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(nfc->io_regs))
 		return PTR_ERR(nfc->io_regs);
 
+	printk("lets go eat");
+
 	ret = pl35x_nand_reset_state(nfc);
+	printk("chicken");
 	if (ret)
 		return ret;
+	printk("rice");
 
 	ret = pl35x_nand_chips_init(nfc);
+	printk("hihihi");
 	if (ret)
 		return ret;
+	printk("hihi");
 
 	platform_set_drvdata(pdev, nfc);
 	printk("finish deb");
