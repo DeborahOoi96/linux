@@ -238,7 +238,7 @@
 
 &nfc0 {
 	status = "okay";
-	nand@0 {
+	nand-controller@0,0 {
 		reg = <0>;
 	};
 };
