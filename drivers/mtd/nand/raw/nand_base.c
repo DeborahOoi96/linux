@@ -813,7 +813,9 @@ static int nand_reset_interface(struct nand_chip *chip, int chipnr)
 	 * timings to timing mode 0.
 	 */
 
+	printk("Before issue");
 	chip->current_interface_config = nand_get_reset_interface_config();
+	printk("After issue");
 	ret = ops->setup_interface(chip, chipnr,
 				   chip->current_interface_config);
 	if (ret)

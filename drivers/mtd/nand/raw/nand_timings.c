@@ -550,6 +550,7 @@ static const struct nand_interface_config onfi_nvddr_timings[] = {
 /* All NAND chips share the same reset data interface: SDR mode 0 */
 const struct nand_interface_config *nand_get_reset_interface_config(void)
 {
+	printk("Entered nand_get_reset_interface_config\n");
 	return &onfi_sdr_timings[0];
 }
 

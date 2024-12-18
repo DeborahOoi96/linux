@@ -784,6 +784,8 @@ static int pl35x_nfc_exec_op(struct nand_chip *chip,
 static int pl35x_nfc_setup_interface(struct nand_chip *chip, int cs,
 				     const struct nand_interface_config *conf)
 {
+	printk("Entered pl35x_nfc_setup_interface");
+	
 	struct pl35x_nandc *nfc = to_pl35x_nandc(chip->controller);
 	struct pl35x_nand *plnand = to_pl35x_nand(chip);
 	struct pl35x_nand_timings tmgs = {};
@@ -791,15 +793,21 @@ static int pl35x_nfc_setup_interface(struct nand_chip *chip, int cs,
 	unsigned int period_ns, val;
 	struct clk *mclk;
 
+	printk("Stupid no debugger");
+
 	sdr = nand_get_sdr_timings(conf);
 	if (IS_ERR(sdr))
 		return PTR_ERR(sdr);
+
+	printk("got sdr timing liao");
 
 	mclk = of_clk_get_by_name(nfc->dev->parent->of_node, "memclk");
 	if (IS_ERR(mclk)) {
 		dev_err(nfc->dev, "Failed to retrieve SMC memclk\n");
 		return PTR_ERR(mclk);
 	}
+
+	printk("Bodoh");
 
 	/*
 	 * SDR timings are given in pico-seconds while NFC timings must be
@@ -812,18 +820,37 @@ static int pl35x_nfc_setup_interface(struct nand_chip *chip, int cs,
 	 * PL35X SMC needs one extra read cycle in SDR Mode 5. This is not
 	 * written anywhere in the datasheet but is an empirical observation.
 	 */
+	// tRC_min=100000
+	//According to copilot, period_ns is 30ns
+	// this means val is 4
+	printk("First round");
+	printk("tRC_min: %u\n", sdr->tRC_min);
+	printk("period_ns: %u\n", period_ns);
 	val = TO_CYCLES(sdr->tRC_min, period_ns);
+	printk("val: %u\n", val);
 	if (sdr->tRC_min <= 20000)
 		val++;
 
 	tmgs.t_rc = val;
+	printk("t_rc: %u\n", tmgs.t_rc);
 	if (tmgs.t_rc != val || tmgs.t_rc < 2)
 		return -EINVAL;
 
+	printk("Second round");
+	printk("tWC_min: %u\n", sdr->tWC_min);
+	printk("period_ns: %u\n", period_ns);
+
+	// tWC_min=100000
+	//According to copilot, period_ns is 30ns
+	// this means val is 4
 	val = TO_CYCLES(sdr->tWC_min, period_ns);
+	printk("val: %u\n", val);
 	tmgs.t_wc = val;
+	printk("t_wc: %u\n", tmgs.t_wc);
 	if (tmgs.t_wc != val || tmgs.t_wc < 2)
 		return -EINVAL;
+
+	printk("hi this is spam");
 
 	/*
 	 * For all SDR modes, PL35X SMC needs tREA_max being 1,
@@ -854,6 +881,8 @@ static int pl35x_nfc_setup_interface(struct nand_chip *chip, int cs,
 	if (cs == NAND_DATA_IFACE_CHECK_ONLY)
 		return 0;
 
+	printk("more spam");
+
 	plnand->timings = PL35X_SMC_NAND_TRC_CYCLES(tmgs.t_rc) |
 			  PL35X_SMC_NAND_TWC_CYCLES(tmgs.t_wc) |
 			  PL35X_SMC_NAND_TREA_CYCLES(tmgs.t_rea) |
@@ -861,6 +890,8 @@ static int pl35x_nfc_setup_interface(struct nand_chip *chip, int cs,
 			  PL35X_SMC_NAND_TCLR_CYCLES(tmgs.t_clr) |
 			  PL35X_SMC_NAND_TAR_CYCLES(tmgs.t_ar) |
 			  PL35X_SMC_NAND_TRR_CYCLES(tmgs.t_rr);
+
+	printk("end");
 
 	return 0;
 }
@@ -1087,7 +1118,7 @@ static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 
 	printk("spam spam");
 
-	ret = nand_scan(chip, 1);
+	ret = nand_scan(chip, 1);//ISSUE IS HERE
 	if (ret)
 		return ret;
 
@@ -1099,7 +1130,7 @@ static int pl35x_nand_chip_init(struct pl35x_nandc *nfc,
 
 	list_add_tail(&plnand->node, &nfc->chips);
 
-	printk("finished pl35x_nand_chip_init");
+	printk("finished pl35x_nand_chip_init"); //this was not run
 
 	return ret;
 }
@@ -1138,7 +1169,7 @@ static int pl35x_nand_chips_init(struct pl35x_nandc *nfc)
 	}
 
 	for_each_child_of_node(np, nand_np) {
-		ret = pl35x_nand_chip_init(nfc, nand_np);
+		ret = pl35x_nand_chip_init(nfc, nand_np); //issue here
 		if (ret) {
 			printk("oops here we go");
 			of_node_put(nand_np);
